@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Pulse AI — Rule-Based Chatbot</title>
+    <meta name="description" content="An immersive AI chatbot interface with a stunning glassmorphic dark-mode design powered by Pulse AI.">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-bright": "#282c36",
+              "on-primary-container": "#005359",
+              "secondary-container": "#7000ff",
+              "on-error": "#490006",
+              "tertiary-container": "#fe00d5",
+              "surface-container-low": "#10131a",
+              "primary-fixed": "#00eefc",
+              "background": "#0b0e14",
+              "outline": "#73757d",
+              "on-tertiary-container": "#0e000a",
+              "on-surface": "#ecedf6",
+              "primary": "#8ff5ff",
+              "on-error-container": "#ffa8a3",
+              "secondary": "#ac89ff",
+              "on-secondary-container": "#f8f1ff",
+              "error": "#ff716c",
+              "tertiary-fixed": "#ff87db",
+              "on-primary": "#005d63",
+              "error-dim": "#d7383b",
+              "on-secondary-fixed": "#41009a",
+              "on-secondary": "#290067",
+              "primary-container": "#00eefc",
+              "secondary-dim": "#874cff",
+              "surface": "#0b0e14",
+              "secondary-fixed-dim": "#ceb9ff",
+              "on-surface-variant": "#a9abb3",
+              "surface-dim": "#0b0e14",
+              "on-tertiary-fixed": "#34002a",
+              "surface-variant": "#22262f",
+              "tertiary-dim": "#ff5dd7",
+              "surface-container-highest": "#22262f",
+              "surface-container": "#161a21",
+              "tertiary-fixed-dim": "#ff6ad8",
+              "on-primary-fixed-variant": "#005e64",
+              "primary-fixed-dim": "#00deec",
+              "secondary-fixed": "#dac9ff",
+              "surface-tint": "#8ff5ff",
+              "error-container": "#9f0519",
+              "on-primary-fixed": "#003f43",
+              "surface-container-high": "#1c2028",
+              "on-background": "#ecedf6",
+              "outline-variant": "#45484f",
+              "inverse-surface": "#f9f9ff",
+              "on-tertiary-fixed-variant": "#6f005c",
+              "surface-container-lowest": "#000000",
+              "inverse-primary": "#006a71",
+              "inverse-on-surface": "#52555c",
+              "on-tertiary": "#430036",
+              "on-secondary-fixed-variant": "#6300e2",
+              "tertiary": "#ff5dd7",
+              "primary-dim": "#00deec"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Manrope"],
+              "label": ["Space Grotesk"]
+            },
+            borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+          },
+        },
+      }
+    </script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #0b0e14;
+            overflow-x: hidden;
+            min-height: 100dvh;
+            font-family: 'Manrope', sans-serif;
+            color: #ecedf6;
+        }
+
+        /* === Ambient Effects === */
+        .mesh-gradient {
+            background: radial-gradient(at 0% 0%, rgba(143, 245, 255, 0.15) 0px, transparent 50%),
+                        radial-gradient(at 100% 0%, rgba(172, 137, 255, 0.2) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(255, 93, 215, 0.15) 0px, transparent 50%),
+                        radial-gradient(at 0% 100%, rgba(0, 238, 252, 0.1) 0px, transparent 50%);
+        }
+
+        .ethereal-blur {
+            backdrop-filter: blur(40px) saturate(180%);
+        }
+
+        /* === Scrollbar === */
+        .chat-scroll::-webkit-scrollbar { width: 4px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #8ff5ff 0%, #ac89ff 100%);
+            border-radius: 9999px;
+        }
+
+        /* === Animations === */
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(16px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 40px 10px rgba(143,245,255,0.15), 0 0 80px 30px rgba(143,245,255,0.08); }
+            50%      { box-shadow: 0 0 60px 20px rgba(143,245,255,0.25), 0 0 120px 50px rgba(143,245,255,0.12); }
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        @keyframes bounce-dot {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+            40%           { transform: scale(1); opacity: 1; }
+        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .msg-appear { animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+        /* === Typing Dots === */
+        .typing-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin: 0 3px; animation: bounce-dot 1.4s infinite ease-in-out; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; background: #8ff5ff; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; background: #ac89ff; }
+        .typing-dot:nth-child(3) { animation-delay: 0s;     background: #ff5dd7; }
+
+        /* === Glass Card === */
+        .glass-panel {
+            background: rgba(16, 19, 26, 0.55);
+            backdrop-filter: blur(24px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+
+        /* === Message Bubbles === */
+        .bubble-bot {
+            background: rgba(40, 44, 54, 0.45);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(143, 245, 255, 0.08);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.3);
+        }
+        .bubble-user {
+            background: linear-gradient(135deg, rgba(112,0,255,0.55) 0%, rgba(143,245,255,0.25) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(172, 137, 255, 0.15);
+            box-shadow: 0 4px 24px rgba(112,0,255,0.2);
+        }
+
+        /* === Input Bar === */
+        .input-bar {
+            background: rgba(34, 38, 47, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(143, 245, 255, 0.08);
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+        .input-bar:focus-within {
+            border-color: rgba(143, 245, 255, 0.25);
+            box-shadow: 0 0 30px rgba(143, 245, 255, 0.08);
+        }
+
+        /* === Quick Action Chips === */
+        .quick-chip {
+            background: rgba(34, 38, 47, 0.5);
+            border: 1px solid rgba(255,255,255,0.06);
+            backdrop-filter: blur(12px);
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .quick-chip:hover {
+            background: linear-gradient(135deg, rgba(143,245,255,0.12), rgba(172,137,255,0.12));
+            border-color: rgba(143,245,255,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(143,245,255,0.1);
+        }
+
+        /* === Send Button === */
+        .send-btn {
+            background: linear-gradient(135deg, #8ff5ff, #ac89ff);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .send-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 24px rgba(143,245,255,0.4);
+        }
+        .send-btn:active { transform: scale(0.95); }
+        .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* === Pulse Orb (Welcome State) === */
+        .pulse-orb-wrap {
+            animation: float 4s ease-in-out infinite;
+        }
+        .pulse-orb {
+            box-shadow: 0 0 80px 20px rgba(143, 245, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        /* === Shimmer text === */
+        .shimmer-text {
+            background: linear-gradient(90deg, #8ff5ff 25%, #ac89ff 50%, #ff5dd7 75%, #8ff5ff 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 4s linear infinite;
+        }
+
+        /* Corner Accents */
+        .corner-accent { pointer-events: none; }
+    </style>
+</head>
+
+<body class="font-body text-on-surface selection:bg-primary/30 flex flex-col min-h-screen">
+
+    <!-- ═══ Ambient Mesh Background ═══ -->
+    <div class="fixed inset-0 z-0 mesh-gradient pointer-events-none"></div>
+    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px] pointer-events-none"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary/10 blur-[120px] pointer-events-none"></div>
+
+    <!-- ═══ Decorative Corner Accents ═══ -->
+    <div class="corner-accent fixed top-6 left-6 w-16 h-16 border-t border-l border-white/[0.06] rounded-tl-xl hidden lg:block"></div>
+    <div class="corner-accent fixed top-6 right-6 w-16 h-16 border-t border-r border-white/[0.06] rounded-tr-xl hidden lg:block"></div>
+    <div class="corner-accent fixed bottom-6 left-6 w-16 h-16 border-b border-l border-white/[0.06] rounded-bl-xl hidden lg:block"></div>
+    <div class="corner-accent fixed bottom-6 right-6 w-16 h-16 border-b border-r border-white/[0.06] rounded-br-xl hidden lg:block"></div>
+
+    <!-- ═══ Top Navigation ═══ -->
+    <nav id="topNav" class="fixed top-0 left-0 right-0 z-50 flex items-center px-5 md:px-6 py-3 bg-[#10131a]/50 backdrop-blur-3xl rounded-b-[2rem] w-[96%] md:w-[92%] mx-auto mt-2 ring-1 ring-inset ring-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+        <div class="flex items-center gap-3">
+            <!-- AI Avatar Orb -->
+            <div class="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-secondary p-[1.5px] shadow-[0_0_16px_rgba(143,245,255,0.3)]">
+                <div class="w-full h-full rounded-full bg-surface-container-low flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">neurology</span>
+                </div>
+            </div>
+            <div>
+                <span class="text-lg font-black text-primary tracking-tighter font-headline">Pulse AI</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.6)]"></span>
+                    <span class="text-[10px] text-on-surface-variant/60 font-label tracking-wider uppercase">Online</span>
+                </div>
+            </div>
+        </div>
+        <div class="ml-auto flex items-center gap-1">
+            <button id="resetBtn" onclick="resetChat()" title="Reset conversation" class="p-2 text-on-surface-variant/60 hover:text-primary hover:bg-white/5 transition-all duration-300 rounded-full">
+                <span class="material-symbols-outlined text-xl">refresh</span>
+            </button>
+            <button class="p-2 text-on-surface-variant/60 hover:text-tertiary hover:bg-white/5 transition-all duration-300 rounded-full">
+                <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ═══ Chat Container ═══ -->
+    <main class="relative z-10 flex-1 flex flex-col w-full max-w-2xl mx-auto pt-24 pb-4 px-4 md:px-6">
+
+        <!-- Welcome State (shown initially, hidden when chatting) -->
+        <div id="welcomeState" class="flex-1 flex flex-col items-center justify-center text-center space-y-8">
+            <!-- Pulse Orb -->
+            <div class="pulse-orb-wrap">
+                <div class="relative">
+                    <div class="pulse-orb w-28 h-28 rounded-full bg-gradient-to-br from-primary to-secondary p-[2px]">
+                        <div class="w-full h-full rounded-full bg-[#0b0e14] flex items-center justify-center overflow-hidden relative">
+                            <div class="absolute inset-0 bg-primary/15 blur-xl"></div>
+                            <span class="material-symbols-outlined text-primary text-5xl relative z-10" style="font-variation-settings: 'FILL' 1;">neurology</span>
+                        </div>
+                    </div>
+                    <div class="absolute -inset-6 bg-primary/5 rounded-full blur-3xl"></div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h1 class="text-3xl md:text-4xl font-bold font-headline tracking-tight shimmer-text">What shall we explore?</h1>
+                <p class="text-on-surface-variant/60 text-sm md:text-base font-body max-w-md">I'm a rule-based chatbot. Ask me anything — greetings, jokes, questions, or just say hello!</p>
+            </div>
+
+            <!-- Quick Suggestion Cards -->
+            <div class="grid grid-cols-2 gap-3 w-full max-w-sm">
+                <button onclick="sendQuickMessage('hello')" class="quick-chip rounded-2xl px-4 py-3 text-left group">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="material-symbols-outlined text-primary text-base">waving_hand</span>
+                        <span class="text-xs font-label text-on-surface-variant/50 uppercase tracking-wider">Greet</span>
+                    </div>
+                    <span class="text-sm text-on-surface/80 font-medium">Say Hello</span>
+                </button>
+                <button onclick="sendQuickMessage('help')" class="quick-chip rounded-2xl px-4 py-3 text-left group">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="material-symbols-outlined text-secondary text-base">help</span>
+                        <span class="text-xs font-label text-on-surface-variant/50 uppercase tracking-wider">Guide</span>
+                    </div>
+                    <span class="text-sm text-on-surface/80 font-medium">What can you do?</span>
+                </button>
+                <button onclick="sendQuickMessage('tell me a joke')" class="quick-chip rounded-2xl px-4 py-3 text-left group">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="material-symbols-outlined text-tertiary text-base">sentiment_very_satisfied</span>
+                        <span class="text-xs font-label text-on-surface-variant/50 uppercase tracking-wider">Fun</span>
+                    </div>
+                    <span class="text-sm text-on-surface/80 font-medium">Tell me a joke</span>
+                </button>
+                <button onclick="sendQuickMessage('who are you')" class="quick-chip rounded-2xl px-4 py-3 text-left group">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="material-symbols-outlined text-primary-dim text-base">info</span>
+                        <span class="text-xs font-label text-on-surface-variant/50 uppercase tracking-wider">About</span>
+                    </div>
+                    <span class="text-sm text-on-surface/80 font-medium">Who are you?</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Messages Area (hidden initially) -->
+        <div id="chatArea" class="flex-1 flex flex-col hidden">
+            <div id="chatMessages" class="flex-1 overflow-y-auto chat-scroll space-y-4 py-4 pr-1">
+                <!-- Messages injected here -->
+            </div>
+        </div>
+
+        <!-- ═══ Input Bar ═══ -->
+        <div class="mt-auto pt-3 pb-2" id="inputSection">
+            <div class="input-bar flex items-center gap-3 rounded-full px-4 py-2.5">
+                <span class="material-symbols-outlined text-on-surface-variant/40 text-xl">chat_bubble</span>
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="Type your message..."
+                    autocomplete="off"
+                    class="flex-1 bg-transparent border-none outline-none text-on-surface text-sm placeholder:text-on-surface-variant/30 font-body"
+                    onkeydown="handleKeyDown(event)"
+                />
+                <button id="sendBtn" onclick="sendMessage()" class="send-btn rounded-full w-9 h-9 flex items-center justify-center flex-shrink-0" title="Send message">
+                    <span class="material-symbols-outlined text-[#0b0e14] text-lg">arrow_upward</span>
+                </button>
+            </div>
+
+            <!-- Quick Actions (shown during chat) -->
+            <div id="quickActions" class="hidden flex-wrap gap-2 justify-center mt-3">
+                <button onclick="sendQuickMessage('hello')" class="quick-chip rounded-full px-3.5 py-1.5 text-xs font-label text-on-surface-variant/70 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-primary">waving_hand</span> Hello
+                </button>
+                <button onclick="sendQuickMessage('help')" class="quick-chip rounded-full px-3.5 py-1.5 text-xs font-label text-on-surface-variant/70 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-secondary">help</span> Help
+                </button>
+                <button onclick="sendQuickMessage('tell me a joke')" class="quick-chip rounded-full px-3.5 py-1.5 text-xs font-label text-on-surface-variant/70 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-tertiary">mood</span> Joke
+                </button>
+                <button onclick="sendQuickMessage('what can you do')" class="quick-chip rounded-full px-3.5 py-1.5 text-xs font-label text-on-surface-variant/70 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-primary-dim">stars</span> Features
+                </button>
+                <button onclick="sendQuickMessage('bye')" class="quick-chip rounded-full px-3.5 py-1.5 text-xs font-label text-on-surface-variant/70 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-on-surface-variant">logout</span> Bye
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const welcomeState = document.getElementById('welcomeState');
+        const chatArea = document.getElementById('chatArea');
+        const quickActions = document.getElementById('quickActions');
+
+        let hasStarted = false;
+
+        function startChat() {
+            if (!hasStarted) {
+                hasStarted = true;
+                welcomeState.classList.add('hidden');
+                chatArea.classList.remove('hidden');
+                chatArea.classList.add('flex');
+                quickActions.classList.remove('hidden');
+                quickActions.classList.add('flex');
+            }
+        }
+
+        function addMessage(content, isUser) {
+            startChat();
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `flex items-end gap-3 msg-appear ${isUser ? 'justify-end' : 'justify-start'}`;
+
+            if (!isUser) {
+                // Bot avatar
+                const avatar = document.createElement('div');
+                avatar.className = 'flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-primary to-secondary p-[1px]';
+                avatar.innerHTML = `<div class="w-full h-full rounded-full bg-surface-container-low flex items-center justify-center">
+                    <span class="material-symbols-outlined text-primary text-xs" style="font-variation-settings: 'FILL' 1;">neurology</span>
+                </div>`;
+                wrapper.appendChild(avatar);
+            }
+
+            const bubble = document.createElement('div');
+            bubble.className = `max-w-[80%] px-4 py-3 text-sm leading-relaxed ${
+                isUser
+                    ? 'bubble-user rounded-2xl rounded-br-md text-on-surface/90'
+                    : 'bubble-bot rounded-2xl rounded-bl-md text-on-surface/80'
+            }`;
+            bubble.textContent = content;
+            wrapper.appendChild(bubble);
+
+            if (isUser) {
+                // User avatar
+                const avatar = document.createElement('div');
+                avatar.className = 'flex-shrink-0 w-7 h-7 rounded-full bg-surface-container-highest flex items-center justify-center';
+                avatar.innerHTML = `<span class="material-symbols-outlined text-on-surface-variant/60 text-xs">person</span>`;
+                wrapper.appendChild(avatar);
+            }
+
+            chatMessages.appendChild(wrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTyping() {
+            startChat();
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex items-end gap-3 justify-start msg-appear';
+            wrapper.id = 'typingIndicator';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'flex-shrink-0 w-7 h-7 rounded-full bg-gradient-to-br from-primary to-secondary p-[1px]';
+            avatar.innerHTML = `<div class="w-full h-full rounded-full bg-surface-container-low flex items-center justify-center">
+                <span class="material-symbols-outlined text-primary text-xs" style="font-variation-settings: 'FILL' 1;">neurology</span>
+            </div>`;
+            wrapper.appendChild(avatar);
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble-bot rounded-2xl rounded-bl-md px-5 py-3.5';
+            bubble.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+            wrapper.appendChild(bubble);
+
+            chatMessages.appendChild(wrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTyping() {
+            const el = document.getElementById('typingIndicator');
+            if (el) el.remove();
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, true);
+            messageInput.value = '';
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
+
+            showTyping();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message }),
+                });
+                const data = await response.json();
+                hideTyping();
+                addMessage(data.response, false);
+            } catch (error) {
+                hideTyping();
+                addMessage('Sorry, there was an error connecting to the server.', false);
+                console.error('Error:', error);
+            }
+
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            messageInput.focus();
+        }
+
+        function sendQuickMessage(text) {
+            messageInput.value = text;
+            sendMessage();
+        }
+
+        async function resetChat() {
+            try {
+                await fetch('/reset', { method: 'POST' });
+                hasStarted = false;
+                chatMessages.innerHTML = '';
+                welcomeState.classList.remove('hidden');
+                chatArea.classList.add('hidden');
+                chatArea.classList.remove('flex');
+                quickActions.classList.add('hidden');
+                quickActions.classList.remove('flex');
+            } catch (error) {
+                console.error('Error resetting chat:', error);
+            }
+        }
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Auto-focus input
+        messageInput.focus();
+    </script>
+
+</body>
+</html>
