@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Captioning AI – CodeSoft Task 3</title>
+  <meta name="description" content="AI-powered image captioning that runs 100% in your browser using Vision Transformer + GPT-2. No API key, no server, no CORS.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Animated Background -->
+  <div class="bg-canvas" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <main class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <span class="eyebrow">CodeSoft · Task 3</span>
+      <h1>Image <span class="gradient-text">Captioning</span> AI</h1>
+      <p class="subtitle">
+        Upload any image — AI runs <strong>100% in your browser</strong> using a Vision Transformer + language model.
+        No API key. No server. No data leaves your device.
+      </p>
+      <div class="tech-pills" aria-label="Technologies used">
+        <span class="pill">🖼️ Vision Transformer (ViT)</span>
+        <span class="pill">🧠 GPT-2 Decoder</span>
+        <span class="pill">⚡ Transformers.js</span>
+        <span class="pill">🔒 Runs Locally</span>
+      </div>
+    </header>
+
+    <!-- Model Load Status Banner -->
+    <div class="model-banner" id="model-banner" role="status" aria-live="polite">
+      <div class="model-banner-inner">
+        <div class="model-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+          </svg>
+        </div>
+        <div class="model-info">
+          <p class="model-title" id="model-title">Loading AI model…</p>
+          <p class="model-subtitle" id="model-subtitle">Downloading ViT-GPT2 (~250 MB) — cached after first load</p>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+          </div>
+          <p class="progress-label" id="progress-label">Initialising…</p>
+        </div>
+        <div class="model-status-dot" id="model-status-dot"></div>
+      </div>
+    </div>
+
+    <!-- Upload & Result Panel -->
+    <section class="main-panel" id="main-panel" aria-label="Image upload and captioning">
+
+      <!-- Drop Zone -->
+      <div class="upload-zone" id="drop-zone" tabindex="0" role="button" aria-label="Upload image – click or drag and drop">
+        <div class="upload-idle" id="upload-idle">
+          <div class="upload-icon-wrap" aria-hidden="true">
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+            </svg>
+            <div class="pulse-ring" aria-hidden="true"></div>
+          </div>
+          <p class="upload-title">Drop your image here</p>
+          <p class="upload-sub">or <span class="link-text">click to browse</span></p>
+          <p class="upload-formats">PNG · JPG · WEBP · GIF · up to 10 MB</p>
+        </div>
+
+        <div class="upload-preview hidden" id="upload-preview">
+          <img id="preview-img" src="" alt="Uploaded preview" class="preview-image"/>
+          <button class="remove-btn" id="remove-btn" aria-label="Remove image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <input type="file" id="file-input" accept="image/*" class="file-input" aria-hidden="true" tabindex="-1">
+      </div>
+
+      <!-- Generate Button -->
+      <button class="btn btn-generate" id="generate-btn" disabled aria-label="Generate caption">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+        </svg>
+        <span id="generate-btn-text">Generate Caption</span>
+      </button>
+
+      <!-- Result Card -->
+      <div class="result-card hidden" id="result-card" aria-live="polite">
+        <div class="result-loading hidden" id="result-loading">
+          <div class="brain-animation" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <p class="loading-text" id="loading-text">Running inference…</p>
+        </div>
+
+        <div class="result-output hidden" id="result-output">
+          <div class="result-header">
+            <div class="result-badge">
+              <svg class="badge-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+              </svg>
+              AI Caption
+            </div>
+            <button class="copy-btn" id="copy-btn" aria-label="Copy caption">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+              </svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <blockquote class="caption-text" id="caption-text"></blockquote>
+          <div class="caption-meta" id="caption-meta"></div>
+        </div>
+
+        <div class="result-error hidden" id="result-error">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <p class="error-msg" id="error-msg"></p>
+          <button class="btn btn-outline" id="retry-btn">Try Again</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works" aria-labelledby="how-title">
+      <h2 id="how-title">How It Works</h2>
+      <div class="steps">
+        <div class="step" style="--i:0">
+          <div class="step-number">1</div>
+          <div class="step-icon" aria-hidden="true">📸</div>
+          <h3>Upload</h3>
+          <p>Drag-and-drop or select any image from your device.</p>
+        </div>
+        <div class="step-arrow" aria-hidden="true">→</div>
+        <div class="step" style="--i:1">
+          <div class="step-number">2</div>
+          <div class="step-icon" aria-hidden="true">🔍</div>
+          <h3>Feature Extraction</h3>
+          <p>ViT (Vision Transformer) encodes the image into rich visual embeddings.</p>
+        </div>
+        <div class="step-arrow" aria-hidden="true">→</div>
+        <div class="step" style="--i:2">
+          <div class="step-number">3</div>
+          <div class="step-icon" aria-hidden="true">🧠</div>
+          <h3>Language Model</h3>
+          <p>GPT-2 decoder attends to visual features to generate a fluent caption.</p>
+        </div>
+        <div class="step-arrow" aria-hidden="true">→</div>
+        <div class="step" style="--i:3">
+          <div class="step-number">4</div>
+          <div class="step-icon" aria-hidden="true">💬</div>
+          <h3>Caption</h3>
+          <p>A natural-language sentence describing your image is returned instantly.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sample Gallery -->
+    <section class="gallery-section" aria-labelledby="gallery-title">
+      <h2 id="gallery-title">Try a Sample</h2>
+      <p class="gallery-sub">Click any image to load it instantly</p>
+      <div class="gallery" id="sample-gallery" role="list"></div>
+    </section>
+
+    <footer class="footer">
+      <p>Built with ❤️ for <strong>CodeSoft</strong> · Task 3 – Image Captioning AI</p>
+      <p class="footer-sub">Powered by <strong>Transformers.js</strong> · Model: <strong>Xenova/vit-gpt2-image-captioning</strong> · Runs 100% in your browser</p>
+    </footer>
+
+  </main>
+
+  <!-- Transformers.js from CDN (ES module) -->
+  <script type="module" src="script.js?v=3"></script>
+</body>
+</html>
