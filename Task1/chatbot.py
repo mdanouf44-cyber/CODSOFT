@@ -128,9 +128,11 @@ chatbot = RuleBasedChatbot()
 class ChatbotHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/':
-            self.path = '/chatbot_ui.html'
+            self.path = '/chatbotui.html'
             return SimpleHTTPRequestHandler.do_GET(self)
-        elif self.path == '/chatbot_ui.html':
+        elif self.path in ['/chatbotui.html', '/chatbot_ui.html']:
+            if self.path == '/chatbot_ui.html':
+                self.path = '/chatbotui.html'
             return SimpleHTTPRequestHandler.do_GET(self)
         else:
             self.send_error(404)
